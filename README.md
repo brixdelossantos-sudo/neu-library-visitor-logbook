@@ -137,7 +137,7 @@ VITE v8.0.0  ready in 150ms
 
 ## Accessing the Application
 
-1. Open browser and go to: **http://localhost:5173**
+1. Open browser and go to: **[http://localhost:5173](https://neu-library-visitor-logbook.vercel.app/)**
 2. Click "Login" button
 3. You'll be logged in as the admin user
 
