@@ -74,22 +74,12 @@ npm install
 
 1. **Database Setup** (Choose one):
 
-   **Option A: Local MongoDB**
-   - Install MongoDB locally
-   - Default connection: `mongodb://localhost:27017/neu-library-log`
-
-   **Option B: MongoDB Atlas (Cloud)**
+  MongoDB Atlas (Cloud)**
    - Sign up at https://www.mongodb.com/cloud/atlas
    - Create a cluster and get your connection string
    - Update `.env` file
 
 2. **Environment Variables** (already configured):
-   ```
-   PORT=5000
-   MONGO_URI=mongodb://localhost:27017/neu-library-log
-   JWT_SECRET=your-secret-key-change-this-in-production
-   NODE_ENV=development
-   ```
 
 ## Running the Application
 
@@ -98,12 +88,6 @@ npm install
 ```bash
 # Windows
 mongod
-
-# Mac
-mongod
-
-# Linux
-sudo service mongod start
 ```
 
 ### Terminal 2: Start Backend
@@ -137,7 +121,7 @@ VITE v8.0.0  ready in 150ms
 
 ## Accessing the Application
 
-1. Open browser and go to: **[http://localhost:5173](https://neu-library-visitor-logbook.vercel.app/)**
+1. Open browser and go to: **(https://neu-library-visitor-logbook.vercel.app/)**
 2. Click "Login" button
 3. You'll be logged in as the admin user
 
