@@ -143,7 +143,7 @@ VITE v8.0.0  ready in 150ms
 
 ## Test Credentials
 
-- **Admin Account**: `jcesperanza@neu.edu.ph`
+- **Admin Account**:
 - **Regular User**: Any email ending with `@neu.edu.ph` or `@gmail.com`
 
 ## Features Walkthrough
@@ -219,20 +219,20 @@ VITE v8.0.0  ready in 150ms
 
 ## Deployment
 
-### Deploy Backend (using Render, Heroku, etc.)
+### Deploy Backend (using Render)
 
 1. Create account on platform
 2. Connect GitHub repository
 3. Set environment variables (MONGO_URI, JWT_SECRET)
 4. Deploy
 
-### Deploy Frontend (using Vercel, Netlify)
+### Deploy Frontend (using Vercel)
 
 1. Update API endpoint in `App.jsx`:
    ```javascript
    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
    ```
-2. Deploy to Vercel or Netlify
+2. Deploy to Vercel
 3. Set environment variables
 
 ## Technologies Used
@@ -275,7 +275,7 @@ If you encounter issues:
 ## Project Information
 
 - **Course**: IM2 (Information Management 2)
-- **Institution**: Nueva Ecija University
+- **Institution**: New Era University
 - **Purpose**: Library Visitor Management System
 - **Created**: 2026
 
