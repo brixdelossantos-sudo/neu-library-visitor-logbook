@@ -37,13 +37,14 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log("Google OAuth strategy called for email:", profile.emails[0].value);
         const User = require("./models/User");
         const email = profile.emails[0].value;
 
         let user = await User.findOne({ email });
 
         if (!user) {
-          // Create user for Google OAuth (no password required)
+          console.log("Creating new user for email:", email);
           user = await User.create({
             name: profile.displayName,
             email,
@@ -53,10 +54,14 @@ passport.use(
               ? ["user", "admin"]
               : ["user"]
           });
+          console.log("User created:", user);
+        } else {
+          console.log("User found:", user);
         }
 
         return done(null, user);
       } catch (error) {
+        console.error("Error in Google strategy:", error);
         return done(error);
       }
     }

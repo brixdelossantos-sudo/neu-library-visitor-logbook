@@ -115,6 +115,7 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/auth/login-failed" }),
   async (req, res) => {
     try {
+      console.log("Google callback called, req.user:", req.user);
       const user = req.user;
       const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
 
@@ -129,6 +130,12 @@ router.get(
         { expiresIn: "7d" }
       );
 
+      console.log("JWT signed, redirecting to:", `${frontendURL}?token=${token}&user=${JSON.stringify({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles
+      })}`);
       // Redirect to frontend with token
       res.redirect(`${frontendURL}?token=${token}&user=${JSON.stringify({
         _id: user._id,
