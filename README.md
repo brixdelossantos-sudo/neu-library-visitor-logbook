@@ -183,7 +183,7 @@ VITE v8.0.0  ready in 150ms
 - Ensure MongoDB is running
 
 ### Frontend won't connect to backend
-- Check if backend is running on http://localhost:5000
+- Check if backend is running on [http://localhost:5000](https://neu-library-visitor-logbook-backend.onrender.com)
 - Check browser console for CORS errors
 - Verify environment variables in backend
 
