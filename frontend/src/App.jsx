@@ -7,7 +7,14 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: ""
+  });
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // Check for OAuth callback
   useEffect(() => {
@@ -20,6 +27,7 @@ function App() {
       try {
         const user = JSON.parse(userData);
         localStorage.setItem("token", token);
+        localStorage.setItem("userData", JSON.stringify(user));
         setUser(user);
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -30,7 +38,7 @@ function App() {
     }
 
     if (errorParam) {
-      setError("Login failed. Please try again.");
+      setError("Google login failed. Please try again.");
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -38,7 +46,6 @@ function App() {
     // Check if token is already stored from previous session
     const storedToken = localStorage.getItem("token");
     if (storedToken && !user) {
-      // You might want to add a verify endpoint to validate the token
       try {
         const userData = localStorage.getItem("userData");
         if (userData) {
@@ -50,18 +57,27 @@ function App() {
     }
   }, []);
 
-  const login = async (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email) {
-      setError("Please enter your email");
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
       return;
     }
 
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google-login`, {
-        email: email
+      const res = await axios.post(`${API_URL}/auth/login`, {
+        email: formData.email,
+        password: formData.password
       });
 
       localStorage.setItem("token", res.data.token);
@@ -76,11 +92,40 @@ function App() {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!formData.email || !formData.password || !formData.name) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await axios.post(`${API_URL}/auth/register`, {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name
+      });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userData", JSON.stringify(res.data.user));
+      setUser(res.data.user);
+    } catch (err) {
+      console.error(err);
+      const errorMessage = err.response?.data?.message || "Registration failed. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
     setUser(null);
-    setEmail("");
+    setFormData({ email: "", password: "", name: "" });
+    setIsRegistering(false);
   };
 
   return (
@@ -90,24 +135,83 @@ function App() {
           <h1>📚 NEU Library</h1>
           <p>Visitor Log System</p>
           {error && <div className="error-message">{error}</div>}
-          
-          <form onSubmit={login}>
+
+          <div className="auth-tabs">
+            <button
+              type="button"
+              className={`tab-button ${!isRegistering ? 'active' : ''}`}
+              onClick={() => setIsRegistering(false)}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              className={`tab-button ${isRegistering ? 'active' : ''}`}
+              onClick={() => setIsRegistering(true)}
+            >
+              Register
+            </button>
+          </div>
+
+          <form onSubmit={isRegistering ? handleRegister : handleLogin}>
+            {isRegistering && (
+              <div className="form-group">
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            )}
+
             <div className="form-group">
-              <label htmlFor="email">Enter your email to continue</label>
+              <label htmlFor="email">Email</label>
               <input
                 id="email"
                 type="email"
+                name="email"
                 placeholder="your.email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleInputChange}
                 required
               />
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
-              {loading ? "Accessing..." : "Access Library System"}
+              {loading ? "Processing..." : (isRegistering ? "Create Account" : "Login")}
             </button>
           </form>
+
+          <div className="divider">OR</div>
+
+          <button
+            type="button"
+            className="google-button"
+            disabled={loading}
+            onClick={() => {
+              window.location.href = `${API_URL}/auth/google`;
+            }}
+          >
+            <span>🔵</span> Continue with Google
+          </button>
         </div>
       ) : (
         <div className="main-container">

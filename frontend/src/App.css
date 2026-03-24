@@ -344,6 +344,34 @@ body {
   cursor: not-allowed;
 }
 
+.auth-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  background: #667eea;
+  color: white;
+}
+
+.tab-button:hover:not(.active) {
+  background: #e0e0e0;
+}
+
 @media (max-width: 768px) {
   .login-container {
     margin: 30px auto;
