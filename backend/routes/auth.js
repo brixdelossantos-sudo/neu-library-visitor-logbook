@@ -101,7 +101,13 @@ router.post("/login", async (req, res) => {
 });
 
 // Google OAuth Login - Initiates the Google login process
-router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback"
+  })
+);
 
 // Google OAuth Callback
 router.get(
