@@ -54,36 +54,6 @@ export default function AdminDashboard() {
     "HEL": "College of Health, Education & Livelihood"
   };
 
-  const handleBlockUser = async (userId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/block`,
-        {},
-        { headers: { Authorization: token } }
-      );
-      fetchDashboardData();
-    } catch (err) {
-      console.error("Error blocking user:", err);
-      setError("Failed to block user");
-    }
-  };
-
-  const handleUnblockUser = async (userId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/unblock`,
-        {},
-        { headers: { Authorization: token } }
-      );
-      fetchDashboardData();
-    } catch (err) {
-      console.error("Error unblocking user:", err);
-      setError("Failed to unblock user");
-    }
-  };
-
   if (loading) {
     return <div style={{ textAlign: "center", padding: "40px" }}>Loading dashboard...</div>;
   }
@@ -221,7 +191,7 @@ export default function AdminDashboard() {
       {/* User Management */}
       {activeTab === "users" && (
         <div>
-          <h3>👥 User Management ({users.length})</h3>
+          <h3>👥 Registered Users ({users.length})</h3>
           {users.length > 0 ? (
             <table className="logs-table">
               <thead>
@@ -229,8 +199,7 @@ export default function AdminDashboard() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Status</th>
-                  <th>Action</th>
+                  <th>Registration Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -239,59 +208,13 @@ export default function AdminDashboard() {
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>{user.roles?.join(", ") || "user"}</td>
-                    <td>
-                      <span style={{
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        backgroundColor: user.blocked ? "#ff6b6b" : "#28a745",
-                        color: "white"
-                      }}>
-                        {user.blocked ? "🚫 Blocked" : "✅ Active"}
-                      </span>
-                    </td>
-                    <td>
-                      {user.blocked ? (
-                        <button
-                          onClick={() => handleUnblockUser(user._id)}
-                          style={{
-                            background: "#28a745",
-                            color: "white",
-                            border: "none",
-                            padding: "6px 12px",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                            fontWeight: "bold"
-                          }}
-                        >
-                          Unblock
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleBlockUser(user._id)}
-                          style={{
-                            background: "#ff6b6b",
-                            color: "white",
-                            border: "none",
-                            padding: "6px 12px",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                            fontWeight: "bold"
-                          }}
-                        >
-                          Block
-                        </button>
-                      )}
-                    </td>
+                    <td>{new Date(user.createdAt || Date.now()).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <div className="empty-state">No users found</div>
+            <div className="empty-state">No users registered yet</div>
           )}
         </div>
       )}

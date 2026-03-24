@@ -30,11 +30,7 @@ function App() {
     }
 
     if (errorParam) {
-      if (errorParam === "blocked") {
-        setError("Your account has been blocked by an administrator");
-      } else {
-        setError("Google login failed. Please try again.");
-      }
+      setError("Login failed. Please try again.");
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -65,9 +61,7 @@ function App() {
     setError("");
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google-login`, {
-        email: email,
-        name: email.split("@")[0],
-        username: email.split("@")[0]
+        email: email
       });
 
       localStorage.setItem("token", res.data.token);
@@ -99,11 +93,11 @@ function App() {
           
           <form onSubmit={login}>
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">Enter your email to continue</label>
               <input
                 id="email"
                 type="email"
-                placeholder="example@neu.edu.ph or @gmail.com"
+                placeholder="your.email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -111,22 +105,9 @@ function App() {
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
-              {loading ? "Logging in..." : "Login with Email"}
+              {loading ? "Accessing..." : "Access Library System"}
             </button>
           </form>
-
-          <div className="divider">OR</div>
-
-          <button 
-            type="button"
-            className="google-button" 
-            disabled={loading}
-            onClick={() => {
-              window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
-            }}
-          >
-            <span>🔵</span> Login with Google
-          </button>
         </div>
       ) : (
         <div className="main-container">
