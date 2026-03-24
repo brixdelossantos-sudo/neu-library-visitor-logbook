@@ -109,14 +109,22 @@ router.get(
   })
 );
 
-// Google OAuth Callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/auth/login-failed" }),
-  async (req, res) => {
+// Google OAuth Callback with explicit error handling
+router.get("/google/callback", (req, res, next) => {
+  passport.authenticate("google", { session: false }, async (err, user, info) => {
+    if (err) {
+      console.error("Google callback auth error:", err);
+      return res.status(500).json({ message: "Google authentication failed", error: err.message });
+    }
+
+    if (!user) {
+      console.warn("Google callback no user, info:", info);
+      const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
+      return res.redirect(`${frontendURL}?error=login_failed&info=${encodeURIComponent(info && info.message ? info.message : "No user")}`);
+    }
+
     try {
-      console.log("Google callback called, req.user:", req.user);
-      const user = req.user;
+      console.log("Google callback succeeded, user:", user);
       const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
 
       const token = jwt.sign(
@@ -130,26 +138,21 @@ router.get(
         { expiresIn: "7d" }
       );
 
-      console.log("JWT signed, redirecting to:", `${frontendURL}?token=${token}&user=${JSON.stringify({
+      const payload = {
         _id: user._id,
         name: user.name,
         email: user.email,
         roles: user.roles
-      })}`);
-      // Redirect to frontend with token
-      res.redirect(`${frontendURL}?token=${token}&user=${JSON.stringify({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles
-      })}`);
+      };
+
+      console.log("JWT signed, redirecting to frontend with token");
+      return res.redirect(`${frontendURL}?token=${token}&user=${encodeURIComponent(JSON.stringify(payload))}`);
     } catch (error) {
-      console.error("Google callback error:", error);
-      const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
-      res.redirect(`${frontendURL}?error=login_failed`);
+      console.error("Google callback token/sign error:", error);
+      return res.status(500).json({ message: "Failed to finalize login", error: error.message });
     }
-  }
-);
+  })(req, res, next);
+});
 
 // Login failed route
 router.get("/login-failed", (req, res) => {

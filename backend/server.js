@@ -20,7 +20,11 @@ app.use(express.json());
 app.use(require("express-session")({
   secret: process.env.JWT_SECRET || "your-secret-key",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    sameSite: "none",
+    secure: false
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
