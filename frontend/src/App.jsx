@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import UserPage from "./pages/UserPage";
 import "./App.css";
@@ -7,40 +7,76 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [loginForm, setLoginForm] = useState({
-    username: "",
-    email: ""
-  });
+  const [email, setEmail] = useState("");
 
-  const handleLoginInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // Check for OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userData = params.get("user");
+    const errorParam = params.get("error");
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        localStorage.setItem("token", token);
+        setUser(user);
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+        setError("Login failed. Please try again.");
+      }
+    }
+
+    if (errorParam) {
+      if (errorParam === "blocked") {
+        setError("Your account has been blocked by an administrator");
+      } else {
+        setError("Google login failed. Please try again.");
+      }
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Check if token is already stored from previous session
+    const storedToken = localStorage.getItem("token");
+    if (storedToken && !user) {
+      // You might want to add a verify endpoint to validate the token
+      try {
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } catch (err) {
+        console.error("Error retrieving stored user data:", err);
+      }
+    }
+  }, []);
 
   const login = async (e) => {
     e.preventDefault();
-    if (!loginForm.username || !loginForm.email) {
-      setError("Please fill in both username and email");
+    if (!email) {
+      setError("Please enter your email");
       return;
     }
 
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://localhost:5000/auth/google-login", {
-        email: loginForm.email,
-        name: loginForm.username,
-        username: loginForm.username
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google-login`, {
+        email: email,
+        name: email.split("@")[0],
+        username: email.split("@")[0]
       });
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userData", JSON.stringify(res.data.user));
       setUser(res.data.user);
     } catch (err) {
       console.error(err);
-      setError("Login failed. Make sure the backend is running on http://localhost:5000");
+      const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,8 +84,9 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userData");
     setUser(null);
-    setLoginForm({ username: "", email: "" });
+    setEmail("");
   };
 
   return (
@@ -62,35 +99,34 @@ function App() {
           
           <form onSubmit={login}>
             <div className="form-group">
-              <label htmlFor="username">Username</label>
-              <input
-                id="username"
-                type="text"
-                name="username"
-                placeholder="Enter your username"
-                value={loginForm.username}
-                onChange={handleLoginInputChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
                 id="email"
                 type="email"
-                name="email"
                 placeholder="example@neu.edu.ph or @gmail.com"
-                value={loginForm.email}
-                onChange={handleLoginInputChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Logging in..." : "Login with Email"}
             </button>
           </form>
+
+          <div className="divider">OR</div>
+
+          <button 
+            type="button"
+            className="google-button" 
+            disabled={loading}
+            onClick={() => {
+              window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+            }}
+          >
+            <span>🔵</span> Login with Google
+          </button>
         </div>
       ) : (
         <div className="main-container">

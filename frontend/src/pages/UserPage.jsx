@@ -38,23 +38,29 @@ export default function UserPage({ user, onLogout }) {
   const employeeTypes = ["Student", "Faculty", "Staff", "Visitor"];
 
   // Fetch user's visit logs
-  useEffect(() => {
-    if (role === "user") {
-      fetchMyLogs();
-    }
-  }, [role]);
+useEffect(() => {
+  if (role === "user") {
+    fetchMyLogs();
+  }
+}, [role]);
 
-  const fetchMyLogs = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/logs/my-logs", {
+const fetchMyLogs = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    // Use environment variable instead of localhost
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_URL}/logs/my-logs`,
+      {
         headers: { Authorization: token }
-      });
-      setMyLogs(res.data);
-    } catch (err) {
-      console.error("Error fetching logs:", err);
-    }
-  };
+      }
+    );
+
+    setMyLogs(res.data);
+  } catch (err) {
+    console.error("Error fetching logs:", err);
+  }
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,7 +78,7 @@ export default function UserPage({ user, onLogout }) {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/logs", formData, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/logs`, formData, {
         headers: { Authorization: token }
       });
 

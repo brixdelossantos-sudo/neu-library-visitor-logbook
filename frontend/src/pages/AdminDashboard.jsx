@@ -5,6 +5,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [logs, setLogs] = useState([]);
   const [logsByCollege, setLogsByCollege] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("stats");
@@ -21,16 +22,20 @@ export default function AdminDashboard() {
       const headers = { Authorization: token };
 
       // Fetch stats
-      const statsRes = await axios.get("http://localhost:5000/admin/stats", { headers });
+      const statsRes = await axios.get(`${import.meta.env.VITE_API_URL}/admin/stats`, { headers });
       setStats(statsRes.data);
 
       // Fetch all logs
-      const logsRes = await axios.get("http://localhost:5000/admin/logs", { headers });
+      const logsRes = await axios.get(`${import.meta.env.VITE_API_URL}/admin/logs`, { headers });
       setLogs(logsRes.data);
 
       // Fetch logs by college
-      const collegeRes = await axios.get("http://localhost:5000/admin/logs-by-college", { headers });
+      const collegeRes = await axios.get(`${import.meta.env.VITE_API_URL}/admin/logs-by-college`, { headers });
       setLogsByCollege(collegeRes.data);
+
+      // Fetch all users
+      const usersRes = await axios.get(`${import.meta.env.VITE_API_URL}/admin/users`, { headers });
+      setUsers(usersRes.data);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data");
@@ -47,6 +52,36 @@ export default function AdminDashboard() {
     "BUS": "College of Business",
     "LAW": "College of Law",
     "HEL": "College of Health, Education & Livelihood"
+  };
+
+  const handleBlockUser = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/block`,
+        {},
+        { headers: { Authorization: token } }
+      );
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Error blocking user:", err);
+      setError("Failed to block user");
+    }
+  };
+
+  const handleUnblockUser = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/unblock`,
+        {},
+        { headers: { Authorization: token } }
+      );
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Error unblocking user:", err);
+      setError("Failed to unblock user");
+    }
   };
 
   if (loading) {
@@ -90,6 +125,12 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab("logs")}
         >
           All Visitor Logs
+        </button>
+        <button
+          className={`nav-button ${activeTab === "users" ? "active" : ""}`}
+          onClick={() => setActiveTab("users")}
+        >
+          👥 Manage Users
         </button>
         <button
           className={`nav-button`}
@@ -173,6 +214,84 @@ export default function AdminDashboard() {
             </table>
           ) : (
             <div className="empty-state">No visitor logs yet</div>
+          )}
+        </div>
+      )}
+
+      {/* User Management */}
+      {activeTab === "users" && (
+        <div>
+          <h3>👥 User Management ({users.length})</h3>
+          {users.length > 0 ? (
+            <table className="logs-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user._id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.roles?.join(", ") || "user"}</td>
+                    <td>
+                      <span style={{
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        backgroundColor: user.blocked ? "#ff6b6b" : "#28a745",
+                        color: "white"
+                      }}>
+                        {user.blocked ? "🚫 Blocked" : "✅ Active"}
+                      </span>
+                    </td>
+                    <td>
+                      {user.blocked ? (
+                        <button
+                          onClick={() => handleUnblockUser(user._id)}
+                          style={{
+                            background: "#28a745",
+                            color: "white",
+                            border: "none",
+                            padding: "6px 12px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          Unblock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleBlockUser(user._id)}
+                          style={{
+                            background: "#ff6b6b",
+                            color: "white",
+                            border: "none",
+                            padding: "6px 12px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          Block
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="empty-state">No users found</div>
           )}
         </div>
       )}

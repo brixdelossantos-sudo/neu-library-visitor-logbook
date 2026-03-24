@@ -66,6 +66,7 @@ body {
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   font-weight: bold;
+  width: 100%;
 }
 
 .login-button:hover {
@@ -284,6 +285,63 @@ body {
   color: #999;
   padding: 40px 20px;
   font-size: 16px;
+}
+
+.divider {
+  margin: 20px 0;
+  color: #999;
+  font-weight: bold;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background: #ddd;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.google-button {
+  width: 100%;
+  background: white;
+  color: #333;
+  border: 2px solid #ddd;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.google-button:hover {
+  border-color: #4285F4;
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+}
+
+.google-button:active {
+  transform: scale(0.98);
+}
+
+.google-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
